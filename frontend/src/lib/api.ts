@@ -37,8 +37,15 @@ api.interceptors.response.use(
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 export const authApi = {
-  register: (data: { name: string; email: string; password: string }) =>
-    api.post('/auth/register', data),
+  // New OTP registration flow
+  sendOTP: (data: { name: string; email: string; password: string; confirmPassword: string }) =>
+    api.post('/auth/send-otp', data),
+  verifyOTP: (data: { email: string; otp: string }) =>
+    api.post('/auth/verify-otp', data),
+  resendOTP: (data: { email: string }) =>
+    api.post('/auth/resend-otp', data),
+
+  // Existing
   login: (data: { email: string; password: string }) =>
     api.post('/auth/login', data),
   me: () => api.get('/auth/me'),

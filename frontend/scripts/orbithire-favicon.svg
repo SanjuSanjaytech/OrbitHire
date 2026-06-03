@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="#0f0f1a"/>
+  <rect width="512" height="512" rx="112" fill="none" stroke="#4f46e5" stroke-width="8" opacity="0.6"/>
+
+  <!-- Outer orbit ellipse (tilted) -->
+  <ellipse cx="256" cy="256" rx="180" ry="90"
+    fill="none" stroke="#818cf8" stroke-width="9" opacity="0.5"
+    transform="rotate(-30 256 256)"/>
+
+  <!-- Inner orbit ellipse -->
+  <ellipse cx="256" cy="256" rx="138" ry="69"
+    fill="none" stroke="#6366f1" stroke-width="4" opacity="0.25"
+    transform="rotate(-30 256 256)"/>
+
+  <!-- Center circle (job node) -->
+  <circle cx="256" cy="256" r="56" fill="#4f46e5"/>
+  <circle cx="256" cy="256" r="56" fill="none" stroke="#818cf8" stroke-width="5"/>
+
+  <!-- Briefcase icon -->
+  <rect x="224" y="246" width="64" height="48" rx="8" fill="white" opacity="0.95"/>
+  <rect x="237" y="232" width="38" height="18" rx="7" fill="none" stroke="white" stroke-width="7" opacity="0.95"/>
+  <line x1="256" y1="246" x2="256" y2="294" stroke="#4f46e5" stroke-width="4"/>
+  <line x1="224" y1="270" x2="288" y2="270" stroke="#4f46e5" stroke-width="4"/>
+
+  <!-- Green match dot (orbiting — top right) -->
+  <circle cx="402" cy="174" r="28" fill="#10b981"/>
+  <circle cx="402" cy="174" r="28" fill="none" stroke="#0f0f1a" stroke-width="5"/>
+  <!-- Checkmark -->
+  <polyline points="389,174 399,184 418,162"
+    fill="none" stroke="white" stroke-width="7"
+    stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Purple orbiting dot (bottom left) -->
+  <circle cx="110" cy="338" r="18" fill="#6366f1" opacity="0.8"/>
+
+  <!-- Sparkle top-left -->
+  <line x1="98" y1="128" x2="98" y2="158" stroke="#818cf8" stroke-width="6" stroke-linecap="round" opacity="0.6"/>
+  <line x1="83" y1="143" x2="113" y2="143" stroke="#818cf8" stroke-width="6" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- Sparkle bottom-right -->
+  <line x1="408" y1="370" x2="408" y2="394" stroke="#34d399" stroke-width="5" stroke-linecap="round" opacity="0.5"/>
+  <line x1="396" y1="382" x2="420" y2="382" stroke="#34d399" stroke-width="5" stroke-linecap="round" opacity="0.5"/>
+</svg>

@@ -51,7 +51,10 @@ userSchema.index({ email: 1 });
 
 // Pre-save: hash password
 userSchema.pre('save', async function (next) {
+  // Skip if password not modified OR if it's already a bcrypt hash
   if (!this.isModified('password')) return next();
+  if (this.password.startsWith('$2')) return next(); // already hashed
+
   const salt = await bcrypt.genSalt(12);
   this.password = await bcrypt.hash(this.password, salt);
   next();

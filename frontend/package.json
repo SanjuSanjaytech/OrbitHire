@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@realfavicongenerator/generate-favicon": "^0.8.3",
+    "@realfavicongenerator/image-adapter-node": "^0.8.3",
     "@tanstack/react-query": "^5.51.1",
     "axios": "^1.7.2",
     "clsx": "^2.1.1",
