@@ -417,7 +417,7 @@ function JobRow({ job, delay = 0 }: { job: any; delay?: number }) {
       {/* score + time */}
       <div className="flex items-center gap-3 flex-shrink-0">
         <MatchBadge score={score} />
-        <span className="text-[11px] text-ink-muted w-16 text-right">{timeAgo(job.postedAt)}</span>
+        <span className="hidden sm:inline text-[11px] text-ink-muted w-16 text-right">{timeAgo(job.postedAt)}</span>
         <ChevronRight className="w-4 h-4 text-ink-muted opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
     </Link>
@@ -532,7 +532,7 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 flex-wrap">
           <Link
             href="/jobs"
             className="btn-secondary text-[12px] h-9 px-4 gap-2"
@@ -571,7 +571,7 @@ export default function DashboardPage() {
       {/* ══════════════════════════════════════════════════════════════════
           STAT NODES — 4 big metrics
       ══════════════════════════════════════════════════════════════════ */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
         <StatNode
           label="Total Jobs"     value={stats?.total ?? 0}
           sub="in your feed"     icon={Briefcase}
@@ -598,7 +598,7 @@ export default function DashboardPage() {
       {/* ══════════════════════════════════════════════════════════════════
           MAIN CONTENT — score ring + trend + distribution
       ══════════════════════════════════════════════════════════════════ */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 min-w-0">
 
         {/* SCORE RING CARD */}
         <div
@@ -629,7 +629,7 @@ export default function DashboardPage() {
             {isLoading ? (
               <div className="w-44 h-44 rounded-full shimmer" />
             ) : (
-              <ScoreRing score={stats?.avgScore ?? 0} size={176} />
+              <ScoreRing score={stats?.avgScore ?? 0} size={148} />
             )}
           </div>
 

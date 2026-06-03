@@ -75,7 +75,7 @@ export default function ReportsPage() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="btn-primary"
+          className="btn-primary w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           Generate Report
@@ -131,7 +131,7 @@ export default function ReportsPage() {
             <button
               onClick={() => generateMutation.mutate()}
               disabled={generateMutation.isPending}
-              className="btn-primary"
+              className="btn-primary w-full sm:w-auto"
             >
               {generateMutation.isPending ? (
                 <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Generating...</>
@@ -162,7 +162,7 @@ export default function ReportsPage() {
         <div className="space-y-3">
           {reports.map((report: any) => (
             <div key={report._id} className="card hover:border-brand-500/30 transition-colors">
-              <div className="flex items-start gap-4">
+              <div className="flex flex-col sm:flex-row items-start gap-4">
                 {/* Icon */}
                 <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
                   <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
@@ -172,8 +172,8 @@ export default function ReportsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-medium text-gray-200 truncate">{report.fileName}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">
+                     <p className="text-sm font-medium text-gray-200 break-all sm:truncate">{report.fileName}</p>
+                      <p className="text-xs text-gray-500 mt-0.5 break-words leading-relaxed">
                         Generated {formatDate(report.generatedAt)} ·{' '}
                         {formatFileSize(report.fileSize)} ·{' '}
                         <span className={cn(
@@ -213,7 +213,7 @@ export default function ReportsPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto mt-3 sm:mt-0">
                   {report.available && (
                     <button
                       onClick={() => downloadMutation.mutate(report._id)}
@@ -242,7 +242,7 @@ export default function ReportsPage() {
 
       {/* Info box */}
       <div className="card bg-surface-muted/50 border-surface-border">
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <Clock className="w-5 h-5 text-brand-400 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-gray-200 mb-1">Daily Automatic Reports</p>

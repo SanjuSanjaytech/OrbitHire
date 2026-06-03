@@ -202,7 +202,7 @@ function NavContent({
           />
           {/* logo core */}
           <div className="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center glow-brand relative z-10">
-            <Zap className="w-4.5 h-4.5 text-white" />
+            <Zap className="w-5 h-5 text-white" />
           </div>
           {/* orbit dot */}
           <div
@@ -409,7 +409,7 @@ export default function Sidebar() {
 
           {/* drawer panel */}
           <aside
-            className="relative w-[220px] flex flex-col bg-card border-r border-white/[0.06] shadow-2xl"
+            className="relative w-full max-w-[260px] flex flex-col bg-card border-r border-white/[0.06] shadow-2xl"
             style={{
               transform: drawerReady ? 'translateX(0)' : 'translateX(-100%)',
               transition: 'transform 0.32s cubic-bezier(0.34,1.2,0.64,1)',
