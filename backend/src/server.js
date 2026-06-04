@@ -17,28 +17,6 @@ connectDB().then(() => {
   scheduler.init();
   logger.info('⏰ Daily job scheduler initialized');
 
-  // Verify email on startup
-  const nodemailer = require('nodemailer');
-
-  logger.info(`📧 Email config: USER=${process.env.EMAIL_USER}, PASS_LENGTH=${process.env.EMAIL_PASS?.length}`);
-
-  nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-    tls: { rejectUnauthorized: false },
-  }).verify((error) => {
-    if (error) {
-      logger.error(`❌ Email config failed: ${error.message}`);
-    } else {
-      logger.info('✅ Email transporter ready');
-    }
-  });
-
   // Graceful shutdown
   const shutdown = async (signal) => {
     logger.info(`${signal} received. Starting graceful shutdown...`);
