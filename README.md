@@ -1,6 +1,6 @@
 # 🎯 Job Hunter AI
 
-> An AI-powered full-stack job hunting dashboard for developers — scrapes LinkedIn via Apify, matches jobs against your resume using Claude AI, and exports results to Excel. Runs automatically every day at 8 AM IST.
+> An AI-powered full-stack job hunting dashboard for developers — scrapes LinkedIn via RapidAPI, matches jobs against your resume using Gemini AI, and exports results to Excel. Runs automatically every day at 8 AM IST.
 
 ![Tech Stack](https://img.shields.io/badge/Stack-MERN-blue)  ![Platform](https://img.shields.io/badge/Jobs-LinkedIn-0A66C2)
 
