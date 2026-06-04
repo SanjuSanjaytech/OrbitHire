@@ -17,7 +17,7 @@ const sendOTPEmail = async (email, name, otp) => {
   const emailData = {
     sender: {
       name: 'OrbitHire',
-      email: 'noreply@orbithire.com',
+      email: process.env.EMAIL_USER,
     },
     to: [
       {
