@@ -22,40 +22,32 @@ const sendOTP = async (req, res, next) => {
   try {
     const { name, email, password, confirmPassword } = req.body;
 
-    // Validate all fields present
     if (!name || !email || !password || !confirmPassword) {
       return sendError(res, 'All fields are required', 400);
     }
 
-    // Password match check
     if (password !== confirmPassword) {
       return sendError(res, 'Passwords do not match', 400);
     }
 
-    // Password length
     if (password.length < 6) {
       return sendError(res, 'Password must be at least 6 characters', 400);
     }
 
-    // Check if email already registered
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       return sendError(res, 'This email is already registered. Please login.', 409);
     }
 
-    // Delete any previous OTP for this email
     await OTP.deleteMany({ email: email.toLowerCase() });
 
-    // Generate OTP
     const otp = generateOTP();
     const salt = await bcrypt.genSalt(10);
     const otpHash = await bcrypt.hash(otp, salt);
 
-    // Pre-hash the password for storage
     const passwordSalt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, passwordSalt);
 
-    // Save OTP record
     await OTP.create({
       email: email.toLowerCase(),
       otpHash,
@@ -63,8 +55,14 @@ const sendOTP = async (req, res, next) => {
       password: hashedPassword,
     });
 
-    // Send email
-    await sendOTPEmail(email, name, otp);
+    // Send email with specific error handling
+    try {
+      await sendOTPEmail(email, name, otp);
+    } catch (emailError) {
+      logger.error('Email send failed:', emailError.message);
+      await OTP.deleteOne({ email: email.toLowerCase() });
+      return sendError(res, `Failed to send verification email: ${emailError.message}`, 500);
+    }
 
     logger.info(`OTP sent to ${email}`);
 
@@ -73,6 +71,7 @@ const sendOTP = async (req, res, next) => {
     }, `Verification code sent to ${email}. Valid for ${process.env.OTP_EXPIRES_MINUTES || 10} minutes.`);
 
   } catch (error) {
+    logger.error('sendOTP error:', error.message);
     next(error);
   }
 };
