@@ -19,6 +19,9 @@ connectDB().then(() => {
 
   // Verify email on startup
   const nodemailer = require('nodemailer');
+
+  logger.info(`📧 Email config: USER=${process.env.EMAIL_USER}, PASS_LENGTH=${process.env.EMAIL_PASS?.length}`);
+
   nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
