@@ -4,13 +4,14 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  Eye, EyeOff, Zap, Mail, Lock, User,
+  Eye, EyeOff, Mail, Lock, User,
   ShieldCheck, RefreshCw,
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { useGuestGuard } from '@/hooks/useAuthGuard';
 import { cn } from '@/lib/utils';
+import { BrandMark } from '@/components/ui/BrandMark';
 import toast from 'react-hot-toast';
 
 type Step = 'form' | 'otp';
@@ -127,9 +128,7 @@ export default function RegisterPage() {
         <div className="absolute bottom-1/3 right-1/4 w-48 h-48 rounded-full bg-accent-500/8 blur-3xl" />
 
         <div className="relative z-10 text-center max-w-sm">
-          <div className="w-14 h-14 rounded-2xl bg-brand-600 flex items-center justify-center mx-auto mb-6 glow-brand">
-            <Zap className="w-7 h-7 text-white" />
-          </div>
+          <BrandMark className="mx-auto mb-6 h-14 w-14 rounded-2xl" />
           <h1 className="font-display text-4xl font-extrabold text-ink-primary leading-tight mb-4">
             Start your AI-powered<br />
             <span className="text-gradient">job search today.</span>
@@ -167,9 +166,7 @@ export default function RegisterPage() {
 
         {/* Mobile logo */}
         <div className="lg:hidden mb-8 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center glow-sm">
-            <Zap className="w-5 h-5 text-white" />
-          </div>
+          <BrandMark className="h-9 w-9" />
           <span className="font-display text-lg font-bold text-ink-primary">OrbitHire</span>
         </div>
 

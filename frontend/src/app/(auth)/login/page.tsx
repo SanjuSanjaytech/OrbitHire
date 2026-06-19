@@ -3,11 +3,12 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Zap, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { useGuestGuard } from '@/hooks/useAuthGuard';
 import { cn } from '@/lib/utils';
+import { BrandMark } from '@/components/ui/BrandMark';
 import toast from 'react-hot-toast';
 
 /* ─── tiny floating orb (purely decorative) ─────────────────────────────── */
@@ -113,9 +114,7 @@ export default function LoginPage() {
 
           {/* logo */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center glow-brand">
-              <Zap className="w-5 h-5 text-white" />
-            </div>
+            <BrandMark className="h-9 w-9" />
             <span className="font-display text-lg font-bold text-ink-primary tracking-tight">
               OrbitHire
             </span>
@@ -182,9 +181,7 @@ export default function LoginPage() {
       >
         {/* mobile logo */}
         <div className="lg:hidden mb-10 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center glow-sm">
-            <Zap className="w-5 h-5 text-white" />
-          </div>
+          <BrandMark className="h-9 w-9" />
           <span className="font-display text-lg font-bold text-ink-primary">OrbitHire</span>
         </div>
 

@@ -15,12 +15,12 @@ import {
   Settings,
   User,
   X,
-  Zap,
 } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { BrandMark } from '@/components/ui/BrandMark';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -150,9 +150,7 @@ export default function Sidebar() {
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white shadow-sm">
-            <Zap className="h-5 w-5" />
-          </span>
+          <BrandMark className="h-9 w-9 rounded-lg" />
           <span className="font-display text-lg font-extrabold tracking-tight text-slate-950">OrbitHire</span>
         </Link>
 
@@ -188,9 +186,7 @@ export default function Sidebar() {
           <div className="relative ml-auto flex h-full w-full max-w-[320px] animate-slide-left flex-col border-l border-slate-200 bg-white shadow-2xl">
             <div className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4">
               <div className="flex items-center gap-2.5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white shadow-sm">
-                  <Zap className="h-5 w-5" />
-                </span>
+                <BrandMark className="h-9 w-9 rounded-lg" />
                 <span className="font-display text-lg font-extrabold text-slate-950">OrbitHire</span>
               </div>
               <button

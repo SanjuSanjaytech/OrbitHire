@@ -68,7 +68,7 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Reports</h1>
+          <h1 className="text-2xl font-bold text-black">Reports</h1>
           <p className="text-slate-500 text-sm mt-1">
             Generate Excel exports of your AI-matched job results
           </p>

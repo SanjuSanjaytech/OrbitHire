@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, Mail, ShieldCheck, Zap } from 'lucide-react';
+import { ArrowLeft, Mail, ShieldCheck } from 'lucide-react';
+import { BrandMark } from '@/components/ui/BrandMark';
 
 export default function ForgotPasswordPage() {
   return (
@@ -13,9 +14,7 @@ export default function ForgotPasswordPage() {
         </Link>
 
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-600 text-white">
-            <Zap className="h-5 w-5" />
-          </div>
+          <BrandMark className="h-11 w-11" />
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-950">Reset password</h1>
             <p className="text-sm text-slate-500">Password reset is coming soon.</p>
