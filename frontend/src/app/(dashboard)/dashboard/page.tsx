@@ -8,7 +8,7 @@ import {
   Briefcase, TrendingUp, Star, CheckCircle,
   Search, FileSpreadsheet, Zap, ArrowUpRight,
   Target, Radio, Activity, ChevronRight,
-  Cpu, Globe, Bell,
+  Cpu, Globe, Bell, ListChecks, Lightbulb, Send,
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip,
@@ -137,7 +137,7 @@ function StatNode({
   return (
     <div
       className={cn(
-        'relative p-5 rounded-2xl border border-white/[0.06] bg-card overflow-hidden group cursor-default',
+        'relative p-5 rounded-2xl border border-slate-200 bg-card overflow-hidden group cursor-default',
         'transition-all duration-700',
         vis ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6',
       )}
@@ -356,7 +356,7 @@ function MatchDistribution({ high = 0, mid = 0, low = 0 }: { high?: number; mid?
             <span className="text-[11px] font-semibold text-ink-muted">{b.label}</span>
             <span className="text-[11px] font-bold text-ink-secondary">{b.value}</span>
           </div>
-          <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+          <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-1000"
               style={{
@@ -388,7 +388,7 @@ function JobRow({ job, delay = 0 }: { job: any; delay?: number }) {
       href="/jobs"
       className={cn(
         'flex items-center gap-4 px-4 py-3.5 rounded-xl',
-        'border border-transparent hover:border-white/[0.08] hover:bg-white/[0.03]',
+        'border border-transparent hover:border-slate-200 hover:bg-slate-50',
         'transition-all duration-500 group',
         vis ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4',
       )}
@@ -403,7 +403,7 @@ function JobRow({ job, delay = 0 }: { job: any; delay?: number }) {
 
       {/* info */}
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-semibold text-ink-primary truncate group-hover:text-white transition-colors">
+        <p className="text-[13px] font-semibold text-ink-primary truncate group-hover:text-slate-900 transition-colors">
           {job.title}
         </p>
         <p className="text-[11px] text-ink-muted mt-0.5">
@@ -440,8 +440,8 @@ function ActionCard({
     <Link
       href={href}
       className={cn(
-        'relative p-5 rounded-2xl border border-white/[0.06] bg-card overflow-hidden group',
-        'hover:border-white/[0.12] transition-all duration-500',
+        'relative p-5 rounded-2xl border border-slate-200 bg-card overflow-hidden group',
+        'hover:border-slate-300 transition-all duration-500',
         vis ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6',
       )}
     >
@@ -459,7 +459,7 @@ function ActionCard({
       <div className="text-3xl mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6 inline-block">
         {emoji}
       </div>
-      <h3 className="text-[13px] font-bold text-ink-primary mb-1 group-hover:text-white transition-colors font-display">
+      <h3 className="text-[13px] font-bold text-ink-primary mb-1 group-hover:text-slate-900 transition-colors font-display">
         {title}
       </h3>
       <p className="text-[11px] text-ink-muted leading-relaxed">{desc}</p>
@@ -476,6 +476,87 @@ function ActionCard({
 /* ─────────────────────────────────────────────────────────────────────────────
    MAIN DASHBOARD PAGE
 ───────────────────────────────────────────────────────────────────────────── */
+function PriorityQueue({ jobs }: { jobs: any[] }) {
+  if (!jobs.length) {
+    return (
+      <div className="card h-full flex flex-col items-center justify-center text-center py-10">
+        <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-3">
+          <ListChecks className="w-5 h-5 text-emerald-400" />
+        </div>
+        <p className="text-sm font-semibold text-ink-primary">No urgent applications</p>
+        <p className="text-[12px] text-ink-muted mt-1 max-w-xs">Strong new matches will appear here when the feed has roles worth acting on.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="card">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <ListChecks className="w-4 h-4 text-emerald-400" />
+          <h2 className="font-display font-bold text-ink-primary text-[15px]">Today&apos;s Priority Queue</h2>
+        </div>
+        <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-2 py-1">
+          {jobs.length} to review
+        </span>
+      </div>
+      <div className="space-y-2">
+        {jobs.map((job) => (
+          <Link
+            key={job._id}
+            href="/jobs"
+            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 hover:border-emerald-500/20 hover:bg-emerald-500/5 transition-all"
+          >
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+              <Send className="w-3.5 h-3.5 text-emerald-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-semibold text-ink-primary truncate">{job.title}</p>
+              <p className="text-[11px] text-ink-muted truncate">
+                {job.company?.name} {job.location?.raw ? `· ${job.location.raw}` : ''}
+              </p>
+            </div>
+            <MatchBadge score={job.aiMatch?.score ?? 0} />
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MissingSkillsPanel({ skills }: { skills: any[] }) {
+  return (
+    <div className="card">
+      <div className="flex items-center gap-2 mb-4">
+        <Lightbulb className="w-4 h-4 text-amber-400" />
+        <h2 className="font-display font-bold text-ink-primary text-[15px]">Resume Gap Signals</h2>
+      </div>
+      {skills.length === 0 ? (
+        <div className="text-[13px] text-ink-muted py-6 text-center">
+          Missing skill trends will appear after a few AI-matched jobs.
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {skills.slice(0, 6).map((skill) => (
+            <div key={skill._id}>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[12px] font-semibold text-ink-secondary">{skill._id}</span>
+                <span className="text-[11px] text-ink-muted">{skill.count} jobs</span>
+              </div>
+              <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-amber-400 transition-all"
+                  style={{ width: `${Math.min(100, skill.count * 16)}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const [mounted, setMounted] = useState(false);
@@ -494,6 +575,8 @@ export default function DashboardPage() {
 
   const stats      = statsData?.summary;
   const companies  = statsData?.topCompanies || [];
+  const actionQueue = statsData?.actionQueue || [];
+  const missingSkills = statsData?.topMissingSkills || [];
   const recentJobs = jobsData?.data || [];
 
   const hour     = new Date().getHours();
@@ -598,6 +681,11 @@ export default function DashboardPage() {
       {/* ══════════════════════════════════════════════════════════════════
           MAIN CONTENT — score ring + trend + distribution
       ══════════════════════════════════════════════════════════════════ */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_0.7fr] gap-4 sm:gap-5">
+        <PriorityQueue jobs={actionQueue} />
+        <MissingSkillsPanel skills={missingSkills} />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 min-w-0">
 
         {/* SCORE RING CARD */}
@@ -640,8 +728,8 @@ export default function DashboardPage() {
           </div>
 
           {/* outer ring decoration */}
-          <div className="absolute inset-3 rounded-full border border-white/[0.03] pointer-events-none" />
-          <div className="absolute inset-6 rounded-full border border-white/[0.02] pointer-events-none" />
+          <div className="absolute inset-3 rounded-full border border-slate-100 pointer-events-none" />
+          <div className="absolute inset-6 rounded-full border border-slate-100 pointer-events-none" />
         </div>
 
         {/* TREND CHART */}
@@ -696,7 +784,7 @@ export default function DashboardPage() {
           )}
 
           {/* mini company radar */}
-          <div className="mt-6 pt-5 border-t border-white/[0.05]">
+          <div className="mt-6 pt-5 border-t border-slate-200">
             <div className="flex items-center gap-2 mb-3">
               <Globe className="w-3.5 h-3.5 text-emerald-400" />
               <h3 className="text-[11px] font-bold text-ink-muted uppercase tracking-widest">

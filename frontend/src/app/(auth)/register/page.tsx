@@ -331,7 +331,7 @@ export default function RegisterPage() {
                 disabled={loading}
               >
                 {loading ? (
-                  <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Sending code...</>
+                  <><div className="w-4 h-4 border-2 border-slate-300 border-t-white rounded-full animate-spin" /> Sending code...</>
                 ) : (
                   <><Mail className="w-4 h-4" /> Send verification code</>
                 )}
@@ -380,7 +380,7 @@ export default function RegisterPage() {
                 disabled={loading || otp.length !== 6}
               >
                 {loading ? (
-                  <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Verifying...</>
+                  <><div className="w-4 h-4 border-2 border-slate-300 border-t-white rounded-full animate-spin" /> Verifying...</>
                 ) : (
                   <><ShieldCheck className="w-4 h-4" /> Verify & Create Account</>
                 )}

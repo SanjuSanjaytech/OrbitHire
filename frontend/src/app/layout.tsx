@@ -58,13 +58,13 @@ export const metadata: Metadata = {
 
   // ── PWA / mobile ──────────────────────────────────────────────────────────
   manifest:    '/site.webmanifest',
-  themeColor:  '#0a0a18',
+  themeColor:  '#ffffff',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="bg-surface text-gray-100 antialiased">
+      <body className="bg-surface text-slate-900 antialiased">
         <QueryProvider>
           {children}
           <Toaster
@@ -72,14 +72,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             toastOptions={{
               duration: 4000,
               style: {
-                background: '#16162a',
-                color:      '#f1f5f9',
-                border:     '1px solid #1e1e35',
+                background: '#ffffff',
+                color:      '#111827',
+                border:     '1px solid #e5e7eb',
                 borderRadius: '10px',
                 fontSize:   '14px',
+                boxShadow:  '0 12px 32px rgba(15,23,42,0.12)',
               },
-              success: { iconTheme: { primary: '#10b981', secondary: '#16162a' } },
-              error:   { iconTheme: { primary: '#ef4444', secondary: '#16162a' } },
+              success: { iconTheme: { primary: '#16a34a', secondary: '#ffffff' } },
+              error:   { iconTheme: { primary: '#dc2626', secondary: '#ffffff' } },
             }}
           />
         </QueryProvider>

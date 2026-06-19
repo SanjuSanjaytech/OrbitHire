@@ -54,6 +54,7 @@ app.use('/api/resume',  require('./routes/resumeRoutes'));
 app.use('/api/jobs',    require('./routes/jobRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
+app.use('/api/saved-searches', require('./routes/savedSearchRoutes'));
 
 // ─── API Documentation ────────────────────────────────────────────────────────
 app.get('/api/docs', (req, res) => {
@@ -80,6 +81,13 @@ app.get('/api/docs', (req, res) => {
         'GET /jobs/:id': 'Get single job detail (protected)',
         'DELETE /jobs/:id': 'Delete a job (protected)',
         'GET /jobs/stats': 'Get job match statistics (protected)',
+        'POST /jobs/browse': 'Browse and save jobs without a resume (protected)',
+      },
+      savedSearches: {
+        'GET /saved-searches': 'List saved job searches (protected)',
+        'POST /saved-searches': 'Create saved job search (protected)',
+        'PUT /saved-searches/:id': 'Update saved job search (protected)',
+        'DELETE /saved-searches/:id': 'Delete saved job search (protected)',
       },
       reports: {
         'POST /reports/generate': 'Generate Excel report (protected)',

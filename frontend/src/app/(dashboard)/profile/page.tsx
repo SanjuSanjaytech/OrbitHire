@@ -1,298 +1,304 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDropzone } from 'react-dropzone';
-import { resumeApi } from '@/lib/api';
-import { PageSpinner } from '@/components/ui/Spinner';
 import {
-  Upload, CheckCircle, FileText, Code, Wrench,
-  Database, Cloud, Award, RefreshCw,
+  Briefcase,
+  CalendarDays,
+  Camera,
+  CheckCircle2,
+  Loader2,
+  Mail,
+  MapPin,
+  Phone,
+  Save,
+  ShieldCheck,
+  Trash2,
+  Upload,
+  UserRound,
 } from 'lucide-react';
-import { cn, formatDate } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { jobsApi, profileApi } from '@/lib/api';
+import { useAuthStore } from '@/lib/store';
+import { cn } from '@/lib/utils';
+import { PageSpinner } from '@/components/ui/Spinner';
 
-const categoryIcons: Record<string, React.ReactNode> = {
-  language:  <Code className="w-3.5 h-3.5" />,
-  framework: <Wrench className="w-3.5 h-3.5" />,
-  database:  <Database className="w-3.5 h-3.5" />,
-  cloud:     <Cloud className="w-3.5 h-3.5" />,
-  tool:      <Wrench className="w-3.5 h-3.5" />,
-  other:     <Code className="w-3.5 h-3.5" />,
+type ProfileForm = {
+  name: string;
+  phone: string;
+  location: string;
+  headline: string;
+  bio: string;
 };
 
-const categoryColors: Record<string, string> = {
-  language:  'bg-blue-500/15 text-blue-300 border-blue-500/30',
-  framework: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
-  database:  'bg-orange-500/15 text-orange-300 border-orange-500/30',
-  cloud:     'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
-  tool:      'bg-yellow-500/15 text-yellow-300 border-yellow-500/30',
-  other:     'bg-gray-500/15 text-gray-300 border-gray-500/30',
-};
+const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
+
+function getAvatarUrl(path?: string) {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `${API_ORIGIN}${path}`;
+}
+
+function initials(name?: string) {
+  return (name || 'U')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0]?.toUpperCase())
+    .join('') || 'U';
+}
+
+function StatTile({ label, value, icon: Icon }: { label: string; value: string | number; icon: React.ElementType }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-4">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-blue-100 bg-blue-50">
+          <Icon className="h-4 w-4 text-brand-600" />
+        </div>
+        <div>
+          <p className="text-2xl font-bold leading-none text-slate-900">{value}</p>
+          <p className="mt-1 text-xs text-slate-500">{label}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function ProfilePage() {
   const queryClient = useQueryClient();
-  const [uploadProgress, setUploadProgress] = useState(0);
-
-  const { data: profileData, isLoading } = useQuery({
-    queryKey: ['resume-profile'],
-    queryFn: () => resumeApi.getProfile().then(r => r.data.data.resume),
-    retry: false,
+  const { token, setAuth } = useAuthStore();
+  const [editing, setEditing] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState('');
+  const [form, setForm] = useState<ProfileForm>({
+    name: '',
+    phone: '',
+    location: '',
+    headline: '',
+    bio: '',
   });
 
-  const uploadMutation = useMutation({
-    mutationFn: (file: File) => resumeApi.upload(file),
-    onMutate: () => {
-      setUploadProgress(10);
-      const interval = setInterval(() => {
-        setUploadProgress(p => Math.min(p + 5, 85));
-      }, 800);
-      return { interval };
-    },
-    onSuccess: (_, __, context: any) => {
-      clearInterval(context?.interval);
-      setUploadProgress(100);
-      queryClient.invalidateQueries({ queryKey: ['resume-profile'] });
-      toast.success('Resume uploaded and parsed successfully!');
-      setTimeout(() => setUploadProgress(0), 1000);
-    },
-    onError: (err: any, _, context: any) => {
-      clearInterval(context?.interval);
-      setUploadProgress(0);
-      toast.error(err.response?.data?.message || 'Upload failed');
-    },
+  const { data: profileData, isLoading: profileLoading } = useQuery({
+    queryKey: ['profile'],
+    queryFn: () => profileApi.get().then(r => r.data.data.user),
   });
 
-  const onDrop = useCallback((accepted: File[]) => {
-    if (accepted[0]) uploadMutation.mutate(accepted[0]);
-  }, [uploadMutation]);
+  const { data: statsData } = useQuery({
+    queryKey: ['job-stats'],
+    queryFn: () => jobsApi.stats().then(r => r.data.data),
+  });
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { 'application/pdf': ['.pdf'] },
+  useEffect(() => {
+    if (!profileData) return;
+    setForm({
+      name: profileData.name || '',
+      phone: profileData.phone || '',
+      location: profileData.location || '',
+      headline: profileData.headline || '',
+      bio: profileData.bio || '',
+    });
+  }, [profileData]);
+
+  useEffect(() => {
+    if (!avatarFile) {
+      setAvatarPreview('');
+      return;
+    }
+    const url = URL.createObjectURL(avatarFile);
+    setAvatarPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [avatarFile]);
+
+  const updateProfileMutation = useMutation({
+    mutationFn: () => profileApi.update(form),
+    onSuccess: res => {
+      const updated = res.data.data.user;
+      if (token) setAuth(updated, token);
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      setEditing(false);
+      toast.success('Profile updated');
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Could not update profile'),
+  });
+
+  const avatarMutation = useMutation({
+    mutationFn: (file: File) => profileApi.uploadAvatar(file),
+    onSuccess: res => {
+      const updated = res.data.data.user;
+      if (token) setAuth(updated, token);
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      setAvatarFile(null);
+      toast.success('Profile picture updated');
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Avatar upload failed'),
+  });
+
+  const removeAvatarMutation = useMutation({
+    mutationFn: () => profileApi.removeAvatar(),
+    onSuccess: res => {
+      const updated = res.data.data.user;
+      if (token) setAuth(updated, token);
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      setAvatarFile(null);
+      toast.success('Profile picture removed');
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Could not remove avatar'),
+  });
+
+  const onAvatarDrop = useCallback((accepted: File[]) => {
+    if (accepted[0]) setAvatarFile(accepted[0]);
+  }, []);
+
+  const avatarDropzone = useDropzone({
+    onDrop: onAvatarDrop,
+    accept: { 'image/jpeg': ['.jpg', '.jpeg'], 'image/png': ['.png'], 'image/webp': ['.webp'] },
     maxFiles: 1,
-    disabled: uploadMutation.isPending,
+    disabled: avatarMutation.isPending,
   });
 
-  if (isLoading) return <PageSpinner />;
+  const validationError = useMemo(() => {
+    if (form.name.trim().length < 2) return 'Full name must be at least 2 characters.';
+    if (form.phone && !/^[+()\-\s\d]{7,20}$/.test(form.phone)) return 'Enter a valid phone number.';
+    if (form.headline.length > 140) return 'Headline must be 140 characters or less.';
+    if (form.bio.length > 1000) return 'Bio must be 1000 characters or less.';
+    return '';
+  }, [form]);
 
-  const resume = profileData;
+  const saveProfile = () => {
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+    updateProfileMutation.mutate();
+  };
+
+  if (profileLoading) return <PageSpinner />;
+
+  const user = profileData;
+  const avatarSrc = avatarPreview || getAvatarUrl(user?.avatarUrl);
+  const stats = statsData?.summary || {};
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6 pb-10">
       <div>
-        <h1 className="text-2xl font-bold text-white">Resume & Profile</h1>
-        <p className="text-gray-400 text-sm mt-1">Upload your PDF resume to extract skills and profile automatically</p>
+        <p className="text-sm font-semibold text-brand-700">Account</p>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-950">Profile</h1>
+        <p className="mt-1 text-sm text-slate-500">Manage your job-seeker identity and recruiter-facing details.</p>
       </div>
 
-      {/* Upload Zone */}
-      <div className="card">
-        <div className="flex items-center gap-2 mb-4">
-          <FileText className="w-4 h-4 text-brand-400" />
-          <h2 className="font-semibold text-gray-200">
-            {resume ? 'Update Resume' : 'Upload Resume'}
-          </h2>
-          {resume && <span className="badge bg-emerald-500/15 text-emerald-300 border-emerald-500/30">v{resume.version}</span>}
-        </div>
-
-        <div
-          {...getRootProps()}
-          className={cn(
-            'border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-200',
-            isDragActive
-              ? 'border-brand-500 bg-brand-500/10'
-              : 'border-surface-border hover:border-brand-500/50 hover:bg-brand-500/5',
-            uploadMutation.isPending && 'pointer-events-none opacity-70'
-          )}
-        >
-          <input {...getInputProps()} />
-          <Upload className={cn('w-10 h-10 mx-auto mb-3', isDragActive ? 'text-brand-400' : 'text-gray-600')} />
-          <p className="text-gray-300 font-medium">
-            {isDragActive ? 'Drop your PDF here' : 'Drag & drop your PDF resume'}
-          </p>
-          <p className="text-gray-500 text-sm mt-1">or click to browse · PDF only · Max 10MB</p>
-        </div>
-
-        {/* Progress bar */}
-        {uploadProgress > 0 && (
-          <div className="mt-4">
-            <div className="flex justify-between text-xs text-gray-400 mb-1.5">
-              <span>{uploadProgress < 90 ? 'Extracting & analyzing...' : uploadProgress === 100 ? 'Complete!' : 'Finalizing...'}</span>
-              <span>{uploadProgress}%</span>
-            </div>
-            <div className="h-1.5 bg-surface-border rounded-full overflow-hidden">
-              <div
-                className="h-full bg-brand-500 rounded-full transition-all duration-300"
-                style={{ width: `${uploadProgress}%` }}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Profile Info */}
-      {resume && (
-        <>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Profile Card */}
-            <div className="card">
-              <h2 className="font-semibold text-gray-200 mb-4">Profile</h2>
-              <div className="space-y-3">
-                {[
-                  { label: 'Name',       value: resume.profile?.name },
-                  { label: 'Email',      value: resume.profile?.email },
-                  { label: 'Phone',      value: resume.profile?.phone },
-                  { label: 'Location',   value: resume.profile?.location },
-                  { label: 'Current Role', value: resume.profile?.currentRole },
-                  { label: 'Experience', value: resume.profile?.totalExperience },
-                ].map(({ label, value }) => value && (
-                  <div key={label} className="flex justify-between text-sm">
-                    <span className="text-gray-500">{label}</span>
-                    <span className="text-gray-200 font-medium text-right max-w-xs truncate">{value}</span>
-                  </div>
-                ))}
-              </div>
-              {resume.profile?.summary && (
-                <div className="mt-4 pt-4 border-t border-surface-border">
-                  <p className="text-xs text-gray-500 mb-1.5">Summary</p>
-                  <p className="text-sm text-gray-300 leading-relaxed line-clamp-4">{resume.profile.summary}</p>
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
+        <div className="h-28 bg-gradient-to-r from-blue-600 via-blue-500 to-sky-400" />
+        <div className="px-5 pb-6 sm:px-7">
+          <div className="-mt-14 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+              <div className="relative">
+                <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-slate-100 shadow-card">
+                  {avatarSrc ? (
+                    <img src={avatarSrc} alt={user?.name || 'Profile'} className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-3xl font-bold text-brand-700">{initials(user?.name)}</span>
+                  )}
                 </div>
+                <label
+                  {...avatarDropzone.getRootProps()}
+                  className="absolute -bottom-2 -right-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-brand-600 text-white shadow-lg hover:bg-brand-700"
+                  title="Upload profile picture"
+                >
+                  <input {...avatarDropzone.getInputProps()} />
+                  <Camera className="h-4 w-4" />
+                </label>
+              </div>
+
+              <div className="pb-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-2xl font-bold text-slate-900">{user?.name}</h2>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                    <ShieldCheck className="h-3 w-3" />
+                    Active
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-slate-600">{user?.headline || 'Add a professional headline'}</p>
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                  <span className="inline-flex items-center gap-1"><Mail className="h-3.5 w-3.5" />{user?.email}</span>
+                  {user?.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{user.location}</span>}
+                  {user?.phone && <span className="inline-flex items-center gap-1"><Phone className="h-3.5 w-3.5" />{user.phone}</span>}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {avatarFile && (
+                <button onClick={() => avatarMutation.mutate(avatarFile)} disabled={avatarMutation.isPending} className="btn-secondary h-10 text-xs">
+                  {avatarMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                  Save Photo
+                </button>
               )}
-            </div>
-
-            {/* Extraction Meta */}
-            <div className="card">
-              <h2 className="font-semibold text-gray-200 mb-4">Extraction Details</h2>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Extracted at</span>
-                  <span className="text-gray-200">{formatDate(resume.extractionMeta?.extractedAt)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">AI Model</span>
-                  <span className="text-gray-200 font-mono text-xs">{resume.extractionMeta?.model || '—'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Confidence</span>
-                  <span className="text-emerald-400 font-medium">
-                    {resume.extractionMeta?.confidence
-                      ? `${(resume.extractionMeta.confidence * 100).toFixed(0)}%` : '—'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Technical Skills</span>
-                  <span className="text-gray-200">{resume.skills?.technical?.length ?? 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Experiences</span>
-                  <span className="text-gray-200">{resume.experience?.length ?? 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">File</span>
-                  <span className="text-gray-200 truncate max-w-xs text-right text-xs">{resume.originalFileName}</span>
-                </div>
-              </div>
+              {(user?.avatarUrl || avatarFile) && (
+                <button onClick={() => avatarFile ? setAvatarFile(null) : removeAvatarMutation.mutate()} disabled={removeAvatarMutation.isPending} className="btn-secondary h-10 text-xs text-red-600 hover:text-red-700">
+                  <Trash2 className="h-4 w-4" />
+                  Remove Photo
+                </button>
+              )}
+              <button onClick={() => setEditing(v => !v)} className="btn-primary h-10 text-xs">
+                <UserRound className="h-4 w-4" />
+                {editing ? 'Cancel Edit' : 'Edit Profile'}
+              </button>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Skills */}
-          <div className="card">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="font-semibold text-gray-200">
-                Technical Skills
-                <span className="ml-2 text-xs text-gray-500 font-normal">
-                  ({resume.skills?.technical?.length ?? 0} extracted)
-                </span>
-              </h2>
-            </div>
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <StatTile label="Saved jobs" value={stats.saved ?? 0} icon={Briefcase} />
+        <StatTile label="Applied jobs" value={stats.applied ?? 0} icon={CheckCircle2} />
+        <StatTile label="Top matches" value={stats.highMatch ?? 0} icon={ShieldCheck} />
+        <StatTile label="Member since" value={user?.createdAt ? new Date(user.createdAt).getFullYear() : '-'} icon={CalendarDays} />
+      </div>
 
-            {resume.skills?.technical?.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {resume.skills.technical.map((skill: any, i: number) => (
-                  <span
-                    key={i}
-                    className={cn(
-                      'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border',
-                      categoryColors[skill.category] || categoryColors.other
-                    )}
-                  >
-                    {categoryIcons[skill.category] || categoryIcons.other}
-                    {skill.name}
-                    {skill.proficiency && skill.proficiency !== 'intermediate' && (
-                      <span className="opacity-60">· {skill.proficiency}</span>
-                    )}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500 text-sm">No skills extracted yet</p>
-            )}
-
-            {/* Soft Skills */}
-            {resume.skills?.soft?.length > 0 && (
-              <div className="mt-5 pt-5 border-t border-surface-border">
-                <p className="text-xs text-gray-500 mb-3 font-medium uppercase tracking-wider">Soft Skills</p>
-                <div className="flex flex-wrap gap-2">
-                  {resume.skills.soft.map((skill: string, i: number) => (
-                    <span key={i} className="badge bg-gray-500/10 text-gray-400 border-gray-500/20 text-xs">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Certifications */}
-            {resume.skills?.certifications?.length > 0 && (
-              <div className="mt-5 pt-5 border-t border-surface-border">
-                <p className="text-xs text-gray-500 mb-3 font-medium uppercase tracking-wider">Certifications</p>
-                <div className="flex flex-wrap gap-2">
-                  {resume.skills.certifications.map((cert: string, i: number) => (
-                    <span key={i} className="inline-flex items-center gap-1 badge bg-amber-500/10 text-amber-300 border-amber-500/20 text-xs">
-                      <Award className="w-3 h-3" />
-                      {cert}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+      <section className="card">
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Profile Information</h2>
+            <p className="text-sm text-slate-500">Keep the details employers and recruiters see up to date.</p>
           </div>
-
-          {/* Experience */}
-          {resume.experience?.length > 0 && (
-            <div className="card">
-              <h2 className="font-semibold text-gray-200 mb-5">Work Experience</h2>
-              <div className="space-y-5">
-                {resume.experience.map((exp: any, i: number) => (
-                  <div key={i} className="flex gap-4">
-                    <div className="flex flex-col items-center">
-                      <div className="w-2.5 h-2.5 rounded-full bg-brand-500 mt-1 flex-shrink-0" />
-                      {i < resume.experience.length - 1 && (
-                        <div className="w-px flex-1 bg-surface-border mt-1" />
-                      )}
-                    </div>
-                    <div className="pb-5">
-                      <div className="flex flex-wrap items-baseline gap-2 mb-1">
-                        <span className="font-medium text-gray-200">{exp.role}</span>
-                        {exp.current && <span className="badge bg-emerald-500/15 text-emerald-300 border-emerald-500/30 text-xs">Current</span>}
-                      </div>
-                      <p className="text-sm text-brand-400">{exp.company}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{exp.duration}</p>
-                      {exp.technologies?.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-2">
-                          {exp.technologies.map((tech: string, j: number) => (
-                            <span key={j} className="text-xs px-2 py-0.5 rounded bg-surface-border text-gray-400">{tech}</span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+          {editing && (
+            <button onClick={saveProfile} disabled={updateProfileMutation.isPending} className="btn-primary h-10 text-xs">
+              {updateProfileMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Save Changes
+            </button>
           )}
-        </>
-      )}
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <label>
+            <span className="label">Full name</span>
+            <input className="input" disabled={!editing} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+          </label>
+          <label>
+            <span className="label">Email address</span>
+            <input className="input bg-slate-50 text-slate-500" disabled value={user?.email || ''} />
+          </label>
+          <label>
+            <span className="label">Phone number</span>
+            <input className="input" disabled={!editing} placeholder="+91 98765 43210" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+          </label>
+          <label>
+            <span className="label">Location</span>
+            <input className="input" disabled={!editing} placeholder="Bengaluru, India" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} />
+          </label>
+          <label className="md:col-span-2">
+            <span className="label">Professional title / headline</span>
+            <input className="input" disabled={!editing} placeholder="Full Stack Developer | MERN | Node.js" value={form.headline} onChange={e => setForm({ ...form, headline: e.target.value })} />
+            <p className="mt-1 text-xs text-slate-500">{form.headline.length}/140</p>
+          </label>
+          <label className="md:col-span-2">
+            <span className="label">About me</span>
+            <textarea className="input min-h-[140px] resize-none" disabled={!editing} placeholder="Write a short professional summary for recruiters." value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} />
+            <p className="mt-1 text-xs text-slate-500">{form.bio.length}/1000</p>
+          </label>
+        </div>
+      </section>
     </div>
   );
 }

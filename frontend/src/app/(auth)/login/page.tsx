@@ -42,13 +42,13 @@ function StatPill({
   return (
     <div
       className={cn(
-        'flex items-center gap-3 px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm',
+        'flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-100 backdrop-blur-sm',
         'transition-all duration-700',
         visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4',
       )}
     >
       <span className="text-xl font-extrabold font-display text-white">{value}</span>
-      <span className="text-[11px] text-white/50 leading-tight">{label}</span>
+      <span className="text-[11px] text-slate-500 leading-tight">{label}</span>
     </div>
   );
 }
@@ -152,7 +152,7 @@ export default function LoginPage() {
           {/* testimonial */}
           <div
             className={cn(
-              'flex items-start gap-4 p-5 rounded-2xl border border-white/8 bg-white/4 backdrop-blur-sm max-w-sm',
+              'flex items-start gap-4 p-5 rounded-2xl border border-slate-200 bg-slate-50 backdrop-blur-sm max-w-sm',
               'transition-all duration-700 delay-700',
               mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6',
             )}
@@ -282,7 +282,7 @@ export default function LoginPage() {
 
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-slate-300 border-t-white rounded-full animate-spin" />
                   Signing in…
                 </span>
               ) : (

@@ -5,6 +5,11 @@ interface User {
   name: string;
   email: string;
   role: string;
+  phone?: string;
+  location?: string;
+  headline?: string;
+  bio?: string;
+  avatarUrl?: string;
   preferences: {
     emailNotifications: boolean;
     schedulerEnabled: boolean;

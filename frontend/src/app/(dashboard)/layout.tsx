@@ -11,7 +11,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="min-h-screen bg-surface flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-400 text-sm">Loading...</p>
+          <p className="text-slate-500 text-sm">Loading...</p>
         </div>
       </div>
     );
@@ -20,10 +20,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!isAuthenticated) return null;
 
   return (
-    <div className="flex min-h-screen bg-surface overflow-x-hidden">
+    <div className="min-h-screen bg-surface overflow-x-hidden">
       <Sidebar />
-        <main className="flex-1 lg:ml-[220px] min-h-screen overflow-x-hidden">
-          <div className="pt-16 lg:pt-0 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-in w-full">
+        <main className="min-h-screen overflow-x-hidden">
+          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-in w-full">
           {children}
         </div>
       </main>

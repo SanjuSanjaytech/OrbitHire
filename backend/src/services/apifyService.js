@@ -56,6 +56,7 @@ const scrapeLinkedInJobs = async (queries = JOB_QUERIES, location = 'India') => 
         const id = job.job_id || generateJobId(job);
         if (!seen.has(id)) {
           seen.add(id);
+          job._searchQuery = query;
           allRawJobs.push(job);
         }
       }
@@ -118,7 +119,7 @@ const normalizeJSearchJobs = (rawJobs = []) => {
         platform: 'JSearch',
         jobId:    job.job_id || generateJobId(job),
       },
-      searchQuery: null,
+      searchQuery: job._searchQuery || null,
     }));
 };
 

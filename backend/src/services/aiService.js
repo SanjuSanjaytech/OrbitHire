@@ -205,17 +205,39 @@ Description: ${(job.description || '').substring(0, 2000)}
 Return this JSON structure:
 {
   "score": 85,
+  "breakdown": {
+    "skills": 88,
+    "experience": 76,
+    "roleFit": 90,
+    "location": 80
+  },
   "matchedSkills": ["Node.js", "React", "MongoDB"],
   "missingSkills": ["Docker", "Kubernetes"],
+  "priority": "apply_now",
+  "actionPlan": {
+    "resumeKeywords": ["REST APIs", "MongoDB aggregation", "React hooks"],
+    "resumeSuggestions": [
+      "Add one bullet that quantifies backend API work.",
+      "Mention React and Node.js together in a project summary."
+    ],
+    "coverLetterAngle": "Lead with MERN project experience and fast learning in production teams.",
+    "nextStep": "Apply today and tailor the top resume project to this stack."
+  },
+  "confidence": 0.82,
   "recommendation": "highly_recommended",
   "reasoning": "Strong match for backend and full-stack roles. 85% skill alignment. Missing only DevOps skills."
 }
 
 Rules:
 - score: 0-100 integer
+- breakdown values: 0-100 integers for skills, experience, roleFit, and location
 - recommendation must be: "highly_recommended" (score>=75), "recommended" (score 55-74), "consider" (score 35-54), "not_recommended" (score<35)
+- priority must be one of: "apply_now", "save_for_later", "skill_gap", "low_priority"
 - matchedSkills: skills from candidate that match job requirements
 - missingSkills: important job requirements not in candidate profile
+- resumeKeywords: 3-6 job-specific keywords the candidate should mirror if truthful
+- resumeSuggestions: 1-3 concise resume improvements for this job
+- confidence: number from 0 to 1 indicating confidence in the analysis
 - reasoning: 2-3 sentence explanation`;
 
   try {
@@ -223,8 +245,13 @@ Rules:
     const parsed = safeParseJSON(result.content);
     return {
       score: Math.min(100, Math.max(0, parseInt(parsed.score) || 0)),
+      breakdown: normalizeBreakdown(parsed.breakdown, parsed.score),
       matchedSkills: Array.isArray(parsed.matchedSkills) ? parsed.matchedSkills : [],
       missingSkills: Array.isArray(parsed.missingSkills) ? parsed.missingSkills : [],
+      priority: ['apply_now', 'save_for_later', 'skill_gap', 'low_priority']
+        .includes(parsed.priority) ? parsed.priority : inferPriority(parsed.score, parsed.missingSkills),
+      actionPlan: normalizeActionPlan(parsed.actionPlan),
+      confidence: Math.min(1, Math.max(0, Number(parsed.confidence) || 0.7)),
       recommendation: ['highly_recommended', 'recommended', 'consider', 'not_recommended']
         .includes(parsed.recommendation) ? parsed.recommendation : 'consider',
       reasoning: parsed.reasoning || 'Analysis completed',
@@ -254,13 +281,55 @@ const fallbackMatch = (job, resumeSkills) => {
 
   return {
     score,
+    breakdown: normalizeBreakdown(null, score),
     matchedSkills,
     missingSkills: [],
+    priority: inferPriority(score, []),
+    actionPlan: normalizeActionPlan({
+      resumeKeywords: matchedSkills.slice(0, 5),
+      resumeSuggestions: matchedSkills.length
+        ? ['Mirror the matched skills in your resume summary if they are accurate.']
+        : ['Add concrete project keywords before applying to this role.'],
+      coverLetterAngle: 'Lead with the closest matching project and explain your interest in the role.',
+      nextStep: score >= 55 ? 'Review the job description and apply with a tailored resume.' : 'Save only if the role fits your target path.',
+    }),
+    confidence: 0.45,
     recommendation,
     reasoning: 'Keyword-based analysis (AI unavailable)',
     analyzedAt: new Date(),
     model: 'fallback-keyword',
   };
+};
+
+const clampScore = (value, fallback = 0) => {
+  const n = parseInt(value);
+  return Math.min(100, Math.max(0, Number.isFinite(n) ? n : fallback));
+};
+
+const normalizeBreakdown = (breakdown, fallbackScore = 0) => {
+  const fallback = clampScore(fallbackScore);
+  return {
+    skills: clampScore(breakdown?.skills, fallback),
+    experience: clampScore(breakdown?.experience, fallback),
+    roleFit: clampScore(breakdown?.roleFit, fallback),
+    location: clampScore(breakdown?.location, 70),
+  };
+};
+
+const normalizeActionPlan = (plan = {}) => ({
+  resumeKeywords: Array.isArray(plan.resumeKeywords) ? plan.resumeKeywords.slice(0, 8) : [],
+  resumeSuggestions: Array.isArray(plan.resumeSuggestions) ? plan.resumeSuggestions.slice(0, 4) : [],
+  coverLetterAngle: plan.coverLetterAngle || '',
+  nextStep: plan.nextStep || 'Review this role and decide whether it fits your current target.',
+});
+
+const inferPriority = (score = 0, missingSkills = []) => {
+  const n = clampScore(score);
+  const gaps = Array.isArray(missingSkills) ? missingSkills.length : 0;
+  if (n >= 75 && gaps <= 4) return 'apply_now';
+  if (n >= 55) return 'save_for_later';
+  if (gaps > 0) return 'skill_gap';
+  return 'low_priority';
 };
 
 /**

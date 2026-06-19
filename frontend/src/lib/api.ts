@@ -69,15 +69,26 @@ export const resumeApi = {
 
 // ── Jobs ──────────────────────────────────────────────────────────────────────
 export const jobsApi = {
-  search: (params?: { queries?: string[]; location?: string }) =>
+  search: (params?: { queries?: string[]; location?: string; savedSearchId?: string }) =>
     api.post('/jobs/search', params, { timeout: 300000 }),
+  browse: (params?: { queries?: string[]; location?: string; savedSearchId?: string }) =>
+    api.post('/jobs/browse', params, { timeout: 300000 }),
   list: (params?: Record<string, string | number>) =>
     api.get('/jobs', { params }),
   stats: () => api.get('/jobs/stats'),
   get: (id: string) => api.get(`/jobs/${id}`),
-  updateStatus: (id: string, data: { status: string; notes?: string }) =>
+  updateStatus: (id: string, data: { status: string; notes?: string; followUpAt?: string; contactName?: string }) =>
     api.patch(`/jobs/${id}/status`, data),
   delete: (id: string) => api.delete(`/jobs/${id}`),
+};
+
+export const savedSearchApi = {
+  list: () => api.get('/saved-searches'),
+  create: (data: { name: string; queries: string[]; location: string; digestEnabled?: boolean; isDefault?: boolean }) =>
+    api.post('/saved-searches', data),
+  update: (id: string, data: Partial<{ name: string; queries: string[]; location: string; digestEnabled: boolean; isDefault: boolean }>) =>
+    api.put(`/saved-searches/${id}`, data),
+  delete: (id: string) => api.delete(`/saved-searches/${id}`),
 };
 
 // ── Reports ───────────────────────────────────────────────────────────────────
@@ -95,6 +106,14 @@ export const reportsApi = {
 export const profileApi = {
   get: () => api.get('/profile'),
   update: (data: Record<string, unknown>) => api.put('/profile', data),
+  uploadAvatar: (file: File) => {
+    const form = new FormData();
+    form.append('avatar', file);
+    return api.post('/profile/avatar', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  removeAvatar: () => api.delete('/profile/avatar'),
   changePassword: (data: { currentPassword: string; newPassword: string }) =>
     api.put('/profile/password', data),
 };

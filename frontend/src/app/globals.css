@@ -16,16 +16,16 @@
   }
 
   body {
-    background-color: #0f0f1a;
-    color: #f1f5f9;
+    background-color: #f8fafc;
+    color: #111827;
     font-family: var(--font-inter);
   }
 
   /* Custom scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: #0f0f1a; }
-  ::-webkit-scrollbar-thumb { background: #1e1e35; border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
+  ::-webkit-scrollbar-track { background: #f8fafc; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #2563eb; }
 
   /* Remove number input arrows */
   input[type='number']::-webkit-inner-spin-button,
@@ -34,7 +34,7 @@
 
 @layer components {
   .card {
-    @apply bg-surface-card border border-surface-border rounded-xl p-6 shadow-card;
+    @apply bg-white border border-slate-200 rounded-xl p-6 shadow-card;
   }
 
   .btn-primary {
@@ -43,36 +43,38 @@
            text-white text-sm font-medium
            transition-all duration-150
            disabled:opacity-50 disabled:cursor-not-allowed
-           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-surface;
+           shadow-sm
+           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-white;
   }
 
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
-           bg-surface-border hover:bg-white/10 active:bg-white/5
-           text-gray-200 text-sm font-medium
-           border border-surface-border
+           bg-white hover:bg-slate-50 active:bg-slate-100
+           text-slate-700 text-sm font-medium
+           border border-slate-300
            transition-all duration-150
            disabled:opacity-50 disabled:cursor-not-allowed
-           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-surface;
+           shadow-sm
+           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-white;
   }
 
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg
-           hover:bg-white/5 text-gray-400 hover:text-gray-100
+           hover:bg-slate-100 text-slate-500 hover:text-slate-900
            text-sm font-medium transition-all duration-150
            focus:outline-none focus:ring-2 focus:ring-brand-500;
   }
 
   .input {
     @apply w-full px-3.5 py-2.5 rounded-lg
-           bg-surface-muted border border-surface-border
-           text-gray-100 placeholder-gray-500 text-sm
+           bg-white border border-slate-300
+           text-slate-900 placeholder-slate-400 text-sm
            focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent
            transition-all duration-150;
   }
 
   .label {
-    @apply block text-sm font-medium text-gray-300 mb-1.5;
+    @apply block text-sm font-medium text-slate-700 mb-1.5;
   }
 
   .badge {
@@ -80,15 +82,15 @@
   }
 
   .section-title {
-    @apply text-xl font-semibold text-gray-100;
+    @apply text-xl font-semibold text-slate-900;
   }
 
   .text-muted {
-    @apply text-gray-400 text-sm;
+    @apply text-slate-500 text-sm;
   }
 
   .divider {
-    @apply border-t border-surface-border;
+    @apply border-t border-slate-200;
   }
 
   /* Score ring */
@@ -105,10 +107,20 @@
   @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
   .glow-brand { box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); }
+  .glow-sm { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10); }
+  .text-gradient {
+    color: #2563eb;
+    background: none;
+    -webkit-text-fill-color: currentColor;
+  }
+  .mesh,
+  .bg-grid {
+    background: #ffffff;
+  }
 
   /* Shimmer loading */
   .shimmer {
-    background: linear-gradient(90deg, #16162a 25%, #1e1e35 50%, #16162a 75%);
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
   }

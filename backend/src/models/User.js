@@ -35,6 +35,29 @@ const userSchema = new mongoose.Schema({
   lastLogin: {
     type: Date,
   },
+  phone: {
+    type: String,
+    trim: true,
+    maxlength: [20, 'Phone number cannot exceed 20 characters'],
+  },
+  location: {
+    type: String,
+    trim: true,
+    maxlength: [120, 'Location cannot exceed 120 characters'],
+  },
+  headline: {
+    type: String,
+    trim: true,
+    maxlength: [140, 'Headline cannot exceed 140 characters'],
+  },
+  bio: {
+    type: String,
+    trim: true,
+    maxlength: [1000, 'Bio cannot exceed 1000 characters'],
+  },
+  avatarUrl: {
+    type: String,
+  },
   preferences: {
     emailNotifications: { type: Boolean, default: true },
     schedulerEnabled: { type: Boolean, default: true },

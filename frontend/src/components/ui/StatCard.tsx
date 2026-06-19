@@ -29,20 +29,20 @@ export default function StatCard({
   return (
     <div className="card hover:border-brand-500/30 transition-colors duration-200">
       <div className="flex items-start justify-between mb-3">
-        <p className="text-sm text-gray-400 font-medium">{title}</p>
-        <div className={cn('p-2 rounded-lg bg-white/5', iconColor.replace('text-', 'text-').replace('400', '500/10'))}>
+        <p className="text-sm text-slate-500 font-medium">{title}</p>
+        <div className={cn('p-2 rounded-lg bg-slate-100', iconColor.replace('text-', 'text-').replace('400', '500/10'))}>
           <Icon className={cn('w-4 h-4', iconColor)} />
         </div>
       </div>
       <p className="text-3xl font-bold text-white mb-1">{value}</p>
-      {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
+      {subtitle && <p className="text-xs text-slate-500">{subtitle}</p>}
       {trend && (
         <div className={cn(
           'flex items-center gap-1 mt-2 text-xs font-medium',
           trend.value >= 0 ? 'text-emerald-400' : 'text-red-400'
         )}>
           <span>{trend.value >= 0 ? '↑' : '↓'} {Math.abs(trend.value)}%</span>
-          <span className="text-gray-500">{trend.label}</span>
+          <span className="text-slate-500">{trend.label}</span>
         </div>
       )}
     </div>

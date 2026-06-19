@@ -69,7 +69,7 @@ export default function ReportsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Reports</h1>
-          <p className="text-gray-400 text-sm mt-1">
+          <p className="text-slate-500 text-sm mt-1">
             Generate Excel exports of your AI-matched job results
           </p>
         </div>
@@ -85,7 +85,7 @@ export default function ReportsPage() {
       {/* Generate Form */}
       {showForm && (
         <div className="card border-brand-500/30 animate-slide-up">
-          <h2 className="font-semibold text-gray-200 mb-5">New Excel Report</h2>
+          <h2 className="font-semibold text-slate-900 mb-5">New Excel Report</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <div>
               <label className="label">Minimum Match Score</label>
@@ -118,11 +118,11 @@ export default function ReportsPage() {
 
           {/* Report preview info */}
           <div className="bg-surface-muted rounded-lg p-4 mb-5 text-sm">
-            <p className="text-gray-400">
+            <p className="text-slate-500">
               The Excel report will include:{' '}
-              <span className="text-gray-200">Company, Role, Location, Posted Time, Match Score, Matched Skills, Missing Skills, AI Reasoning, Apply URL</span>
+              <span className="text-slate-900">Company, Role, Location, Posted Time, Match Score, Matched Skills, Missing Skills, AI Reasoning, Apply URL</span>
             </p>
-            <p className="text-gray-500 text-xs mt-1">
+            <p className="text-slate-500 text-xs mt-1">
               Plus a Summary sheet with statistics and top companies.
             </p>
           </div>
@@ -134,7 +134,7 @@ export default function ReportsPage() {
               className="btn-primary w-full sm:w-auto"
             >
               {generateMutation.isPending ? (
-                <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Generating...</>
+                <><div className="w-4 h-4 border-2 border-slate-300 border-t-white rounded-full animate-spin" /> Generating...</>
               ) : (
                 <><FileSpreadsheet className="w-4 h-4" /> Generate Excel</>
               )}
@@ -172,13 +172,13 @@ export default function ReportsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                     <p className="text-sm font-medium text-gray-200 break-all sm:truncate">{report.fileName}</p>
-                      <p className="text-xs text-gray-500 mt-0.5 break-words leading-relaxed">
+                     <p className="text-sm font-medium text-slate-900 break-all sm:truncate">{report.fileName}</p>
+                      <p className="text-xs text-slate-500 mt-0.5 break-words leading-relaxed">
                         Generated {formatDate(report.generatedAt)} ·{' '}
                         {formatFileSize(report.fileSize)} ·{' '}
                         <span className={cn(
                           'badge text-xs',
-                          report.type === 'scheduled' ? 'bg-brand-500/15 text-brand-300 border-brand-500/30' : 'bg-gray-500/15 text-gray-300 border-gray-500/30'
+                          report.type === 'scheduled' ? 'bg-brand-500/15 text-brand-300 border-brand-500/30' : 'bg-slate-100 text-slate-700 border-slate-300'
                         )}>
                           {report.type}
                         </span>
@@ -192,7 +192,7 @@ export default function ReportsPage() {
                   {/* Stats chips */}
                   {report.stats && (
                     <div className="flex flex-wrap gap-2 mt-3">
-                      <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+                      <span className="inline-flex items-center gap-1 text-xs text-slate-500">
                         <BarChart3 className="w-3 h-3" />
                         {report.stats.totalJobs} jobs
                       </span>
@@ -204,7 +204,7 @@ export default function ReportsPage() {
                         <TrendingUp className="w-3 h-3" />
                         {report.stats.avgScore}% avg score
                       </span>
-                      <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+                      <span className="inline-flex items-center gap-1 text-xs text-slate-500">
                         <Download className="w-3 h-3" />
                         {report.downloadCount} downloads
                       </span>
@@ -221,7 +221,7 @@ export default function ReportsPage() {
                       className="btn-primary text-sm py-2"
                     >
                       {downloadingId === report._id ? (
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <div className="w-4 h-4 border-2 border-slate-300 border-t-white rounded-full animate-spin" />
                       ) : (
                         <><Download className="w-4 h-4" /> Download</>
                       )}
@@ -245,8 +245,8 @@ export default function ReportsPage() {
         <div className="flex flex-col sm:flex-row gap-3">
           <Clock className="w-5 h-5 text-brand-400 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-gray-200 mb-1">Daily Automatic Reports</p>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm font-medium text-slate-900 mb-1">Daily Automatic Reports</p>
+            <p className="text-sm text-slate-500">
               The scheduler runs every day at 8:00 AM IST. It scrapes fresh LinkedIn jobs,
               runs AI matching against your resume, and automatically generates an Excel report —
               all without any manual action. Enable it in your profile preferences.

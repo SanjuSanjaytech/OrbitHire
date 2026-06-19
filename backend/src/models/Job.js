@@ -76,6 +76,29 @@ const jobSchema = new mongoose.Schema({
     },
     matchedSkills: [String],
     missingSkills: [String],
+    breakdown: {
+      skills: { type: Number, min: 0, max: 100, default: 0 },
+      experience: { type: Number, min: 0, max: 100, default: 0 },
+      roleFit: { type: Number, min: 0, max: 100, default: 0 },
+      location: { type: Number, min: 0, max: 100, default: 0 },
+    },
+    priority: {
+      type: String,
+      enum: ['apply_now', 'save_for_later', 'skill_gap', 'low_priority'],
+      default: 'save_for_later',
+    },
+    actionPlan: {
+      resumeKeywords: [String],
+      resumeSuggestions: [String],
+      coverLetterAngle: String,
+      nextStep: String,
+    },
+    confidence: {
+      type: Number,
+      min: 0,
+      max: 1,
+      default: 0.7,
+    },
     recommendation: {
       type: String,
       enum: ['highly_recommended', 'recommended', 'consider', 'not_recommended'],
@@ -89,11 +112,13 @@ const jobSchema = new mongoose.Schema({
   // User actions
   status: {
     type: String,
-    enum: ['new', 'saved', 'applied', 'rejected', 'interview', 'offer', 'ignored'],
+    enum: ['new', 'saved', 'applied', 'rejected', 'interview', 'offer', 'ignored', 'archived'],
     default: 'new',
   },
   notes: String,
   appliedAt: Date,
+  followUpAt: Date,
+  contactName: String,
 
   // Search metadata
   searchQuery: String,

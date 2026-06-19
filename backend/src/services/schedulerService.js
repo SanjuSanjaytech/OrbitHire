@@ -38,9 +38,11 @@ const runDailyJob = async () => {
     const Resume = require('../models/Resume');
     const Job = require('../models/Job');
     const Report = require('../models/Report');
-    const { scrapeLinkedInJobs, filterRecentJobs } = require('./apifyService');
+    const SavedSearch = require('../models/SavedSearch');
+    const { scrapeLinkedInJobs, filterRecentJobs, JOB_QUERIES } = require('./apifyService');
     const { batchMatchJobs } = require('./aiService');
     const { generateJobReport } = require('./reportService');
+    const { sendJobDigestEmail } = require('./emailService');
 
     // Get all active users with resumes and scheduler enabled
     const users = await User.find({
@@ -55,48 +57,88 @@ const runDailyJob = async () => {
       return;
     }
 
-    // Scrape jobs once (shared across users)
-    let scrapedJobs = [];
-    let runId = null;
-
-    try {
-      const result = await scrapeLinkedInJobs();
-      scrapedJobs = filterRecentJobs(result.jobs, 72);
-      runId = result.runId;
-      logger.info(`Scraped ${scrapedJobs.length} jobs from LinkedIn (last 24h)`);
-    } catch (scrapeError) {
-      logger.error('Scraping failed:', scrapeError);
-      return;
-    }
-
-    if (scrapedJobs.length === 0) {
-      logger.warn('No new jobs found in last 24 hours');
-      return;
-    }
-
-    const batchId = `daily-${Date.now()}`;
-
     // Process each user
     for (const user of users) {
       try {
         logger.info(`Processing user: ${user.email}`);
 
         const resume = await Resume.findOne({ user: user._id, isActive: true });
-        if (!resume) {
-          logger.warn(`No resume found for user ${user.email}, skipping`);
+        const savedSearches = await SavedSearch.find({
+          user: user._id,
+          digestEnabled: true,
+        }).lean();
+
+        const activeSearches = savedSearches.length > 0
+          ? savedSearches
+          : [{
+              _id: null,
+              name: 'Default developer jobs',
+              queries: JOB_QUERIES,
+              location: 'India',
+            }];
+
+        let scrapedJobs = [];
+        const runIds = [];
+
+        for (const search of activeSearches) {
+          try {
+            const result = await scrapeLinkedInJobs(search.queries, search.location || 'India');
+            const recent = filterRecentJobs(result.jobs, 72);
+            scrapedJobs.push(...recent);
+            runIds.push(result.runId);
+            if (search._id) {
+              await SavedSearch.findOneAndUpdate(
+                { _id: search._id, user: user._id },
+                { $set: { lastRunAt: new Date(), lastResultCount: recent.length } }
+              );
+            }
+          } catch (scrapeError) {
+            logger.error(`Saved search "${search.name}" failed for ${user.email}: ${scrapeError.message}`);
+          }
+        }
+
+        const seen = new Set();
+        scrapedJobs = scrapedJobs.filter(job => {
+          const key = job.source?.jobId || job.applyUrl;
+          if (!key || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+
+        if (scrapedJobs.length === 0) {
+          logger.warn(`No new jobs found for ${user.email}`);
           continue;
         }
 
-        // Match jobs against this user's resume
-        const matchResults = await batchMatchJobs(
-          scrapedJobs,
-          resume.skills?.technical || [],
-          resume.profile?.summary
-        );
+        const batchId = `daily-${Date.now()}-${user._id}`;
+        let jobsToSave = scrapedJobs.map(job => ({
+          job,
+          match: {
+            score: 0,
+            matchedSkills: [],
+            missingSkills: [],
+            recommendation: 'consider',
+            priority: 'save_for_later',
+            reasoning: 'Browse-only digest result. Upload a resume to unlock AI match scoring.',
+            confidence: 0,
+            analyzedAt: null,
+            model: 'browse-only',
+          },
+        }));
+
+        if (!resume) {
+          logger.warn(`No resume found for user ${user.email}; saving browse-only digest jobs`);
+        } else {
+          jobsToSave = await batchMatchJobs(
+            scrapedJobs,
+            resume.skills?.technical || [],
+            resume.profile?.summary
+          );
+        }
 
         // Save matched jobs to DB
         const savedJobIds = [];
-        for (const { job, match } of matchResults) {
+        for (const { job, match } of jobsToSave) {
           try {
             const savedJob = await Job.findOneAndUpdate(
               {
@@ -112,6 +154,7 @@ const runDailyJob = async () => {
                   ...job,
                   batchId,
                   searchQuery: job.searchQuery,
+                  source: { ...(job.source || {}), runId: runIds[0] },
                 },
                 $set: { aiMatch: match },
               },
@@ -134,23 +177,36 @@ const runDailyJob = async () => {
             'aiMatch.score': { $gte: 35 },
           }).sort({ 'aiMatch.score': -1 });
 
-          const reportResult = await generateJobReport(
-            jobsForReport,
-            { name: user.name },
-            { dateFrom: '24h ago' }
-          );
+          if (jobsForReport.length > 0) {
+            const reportResult = await generateJobReport(
+              jobsForReport,
+              { name: user.name },
+              { dateFrom: '24h ago' }
+            );
 
-          await Report.create({
-            user: user._id,
-            fileName: reportResult.fileName,
-            filePath: reportResult.filePath,
-            fileSize: reportResult.fileSize,
-            type: 'scheduled',
-            stats: reportResult.stats,
-            jobIds: savedJobIds,
+            await Report.create({
+              user: user._id,
+              fileName: reportResult.fileName,
+              filePath: reportResult.filePath,
+              fileSize: reportResult.fileSize,
+              type: 'scheduled',
+              stats: reportResult.stats,
+              jobIds: savedJobIds,
+            });
+
+            logger.info(`Report generated for ${user.email}: ${reportResult.fileName}`);
+          }
+        }
+
+        if (user.preferences?.emailNotifications) {
+          const digestJobs = await Job.find({ _id: { $in: savedJobIds } })
+            .sort({ 'aiMatch.score': -1, postedAt: -1 })
+            .limit(12)
+            .lean();
+          await sendJobDigestEmail(user, digestJobs, {
+            searchCount: activeSearches.length,
+            date: new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }),
           });
-
-          logger.info(`Report generated for ${user.email}: ${reportResult.fileName}`);
         }
       } catch (userError) {
         logger.error(`Error processing user ${user.email}:`, userError);

@@ -20,7 +20,7 @@ export default function ScoreBadge({ score, size = 'md', showLabel = false }: Sc
     <div className="flex flex-col items-center gap-1">
       <div className={cn('relative flex items-center justify-center', sizes[size])}>
         <svg className="absolute inset-0 -rotate-90" viewBox="0 0 44 44" fill="none">
-          <circle cx="22" cy="22" r="18" stroke="#1e1e35" strokeWidth="3" />
+          <circle cx="22" cy="22" r="18" stroke="#e5e7eb" strokeWidth="3" />
           <circle
             cx="22" cy="22" r="18"
             stroke="currentColor"

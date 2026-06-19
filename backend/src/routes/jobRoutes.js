@@ -2,6 +2,7 @@ const router = require('express').Router();
 const { authenticate } = require('../middleware/auth');
 const {
   searchJobs,
+  browseJobs,
   getJobs,
   getStats,
   getJob,
@@ -12,6 +13,7 @@ const {
 router.use(authenticate);
 
 router.post('/search', searchJobs);
+router.post('/browse', browseJobs);
 router.get('/stats', getStats);
 router.get('/', getJobs);
 router.get('/:id', getJob);
