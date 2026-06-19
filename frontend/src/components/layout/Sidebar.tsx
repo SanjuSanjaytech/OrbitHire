@@ -179,23 +179,35 @@ export default function Sidebar() {
       </div>
 
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 md:hidden">
-          <div className="ml-auto flex h-full w-full max-w-xs flex-col bg-white shadow-2xl">
-            <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
-              <span className="font-display text-lg font-extrabold text-slate-950">Menu</span>
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button
+            className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
+            aria-label="Close navigation backdrop"
+            onClick={() => setMobileOpen(false)}
+          />
+          <div className="relative ml-auto flex h-full w-full max-w-[320px] animate-slide-left flex-col border-l border-slate-200 bg-white shadow-2xl">
+            <div className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white shadow-sm">
+                  <Zap className="h-5 w-5" />
+                </span>
+                <span className="font-display text-lg font-extrabold text-slate-950">OrbitHire</span>
+              </div>
               <button
                 onClick={() => setMobileOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
+                className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50"
                 aria-label="Close navigation"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <nav className="flex flex-col gap-1 p-3">
+            <nav className="flex flex-col gap-1.5 bg-white p-4">
+              <p className="px-2 pb-1 text-xs font-bold uppercase tracking-wide text-slate-400">Main</p>
               {navItems.map(item => (
                 <TopNavLink key={item.href} {...item} onClick={() => setMobileOpen(false)} />
               ))}
-              <div className="my-2 border-t border-slate-200" />
+              <div className="my-3 border-t border-slate-200" />
+              <p className="px-2 pb-1 text-xs font-bold uppercase tracking-wide text-slate-400">Account</p>
               {accountItems.map(item => (
                 <TopNavLink key={item.href} {...item} onClick={() => setMobileOpen(false)} />
               ))}
