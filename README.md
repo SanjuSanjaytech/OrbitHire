@@ -1,252 +1,212 @@
-# 🎯 Job Hunter AI
+# OrbitHire - AI Job Hunter
 
-> An AI-powered full-stack job hunting dashboard for developers — scrapes LinkedIn via RapidAPI, matches jobs against your resume using Gemini AI, and exports results to Excel. Runs automatically every day at 8 AM IST.
+> A full-stack AI job-search platform for developers. OrbitHire lets users browse jobs from JSearchAPI on RapidAPI, save search profiles, upload a resume, get Gemini-powered match scores, track applications, export reports, and receive a daily 8:00 AM IST job digest.
 
-![Tech Stack](https://img.shields.io/badge/Stack-MERN-blue)  ![Platform](https://img.shields.io/badge/Jobs-LinkedIn-0A66C2)
+![Stack](https://img.shields.io/badge/Stack-MERN-blue)
+![Jobs API](https://img.shields.io/badge/Jobs-JSearchAPI%20RapidAPI-2563EB)
+![AI](https://img.shields.io/badge/AI-Google%20Gemini-16A34A)
 
----
-
-## ✨ Features
+## Features
 
 | Feature | Details |
-|---------|---------|
-| 📄 **Resume Parser** | Upload PDF → AI extracts skills, experience, education |
-| 🔍 **Job Scraper** | Apify LinkedIn scraper — 4 search queries, India, last 24h |
-| 🤖 **AI Matching** | Claude Sonnet scores each job 0–100, lists matched/missing skills |
-| 📊 **Excel Export** | ExcelJS report with all columns + summary sheet |
-| ⏰ **Scheduler** | node-cron runs daily at 8 AM IST automatically |
-| 🔐 **Auth** | JWT authentication, protected routes |
-| 📱 **Responsive** | Dark-themed Next.js dashboard, mobile-friendly |
+| --- | --- |
+| Resume parsing | Upload a PDF resume and extract profile, skills, education, and experience with Gemini |
+| Browse jobs without resume | Search and save jobs before uploading a resume |
+| Saved search profiles | Save role/location searches, set defaults, and control digest inclusion |
+| AI job matching | Score jobs against the parsed resume with match breakdowns and action guidance |
+| Application tracking | Track saved, applied, interview, offer, rejected, and follow-up states |
+| Daily digest | node-cron runs saved searches every morning at 8:00 AM IST and sends Brevo email digests |
+| Reports | Generate Excel reports with job details, scores, skills, and apply links |
+| Account management | Separate Profile, Resume, and Settings pages with avatar upload and preferences |
 
----
+## Architecture
 
-## 🏗 Architecture
-
-```
+```text
 job-hunter/
-├── backend/                    # Node.js + Express API
-│   └── src/
-│       ├── config/             # Database connection
-│       ├── controllers/        # Request handlers
-│       │   ├── authController.js
-│       │   ├── resumeController.js
-│       │   ├── jobController.js
-│       │   ├── reportController.js
-│       │   └── profileController.js
-│       ├── middleware/         # Auth, upload, validation
-│       ├── models/             # Mongoose schemas
-│       │   ├── User.js
-│       │   ├── Resume.js
-│       │   ├── Job.js
-│       │   └── Report.js
-│       ├── routes/             # Express routers
-│       ├── services/           # Business logic
-│       │   ├── aiService.js        # Anthropic Claude API
-│       │   ├── apifyService.js     # LinkedIn scraper
-│       │   ├── pdfService.js       # PDF text extraction
-│       │   ├── reportService.js    # ExcelJS generation
-│       │   └── schedulerService.js # node-cron daily job
-│       └── utils/              # Logger, errors, responses
-│
-└── frontend/                   # Next.js 14 App Router
-    └── src/
-        ├── app/
-        │   ├── (auth)/         # Login, Register
-        │   └── (dashboard)/    # Protected pages
-        │       ├── dashboard/  # Stats + charts
-        │       ├── jobs/       # Job list + detail panel
-        │       ├── profile/    # Resume upload + skills
-        │       └── reports/    # Excel generation
-        ├── components/         # Reusable UI components
-        ├── hooks/              # useAuthGuard
-        └── lib/                # API client, store, utils
+  backend/                    Node.js + Express API
+    src/
+      controllers/            Auth, resume, jobs, reports, profile, saved searches
+      middleware/             Auth, upload, validation
+      models/                 User, Resume, Job, Report, SavedSearch, OTP
+      routes/                 Express routers
+      services/
+        aiService.js          Google Gemini resume parsing and job matching
+        apifyService.js       JSearchAPI/RapidAPI job fetching service
+        emailService.js       Brevo OTP and job digest emails
+        pdfService.js         PDF text extraction
+        reportService.js      ExcelJS report generation
+        schedulerService.js   Daily 8 AM IST digest runner
+      utils/                  Logger, errors, API responses
+
+  frontend/                   Next.js 14 App Router
+    src/
+      app/(auth)/             Login and registration
+      app/(dashboard)/        Dashboard, jobs, profile, resume, settings, reports
+      components/             Layout and UI components
+      hooks/                  Auth guard
+      lib/                    API client, store, utilities
 ```
 
----
+Note: the job-fetching service file is still named `apifyService.js` for legacy reasons, but it now calls **JSearchAPI through RapidAPI**.
 
-## 🗄 Database Schema
-
-### User
-```js
-{ name, email, password(hashed), role, isActive, lastLogin, preferences }
-```
-
-### Resume
-```js
-{
-  user, originalFileName, rawText,
-  profile: { name, email, phone, location, summary, currentRole, totalExperience },
-  skills: { technical[{name, category, proficiency}], soft[], certifications[], languages[] },
-  experience[{ company, role, duration, technologies[] }],
-  education[{ institution, degree, field, year }],
-  extractionMeta: { model, confidence, tokensUsed }
-}
-```
-
-### Job
-```js
-{
-  user, title,
-  company: { name, logoUrl, industry },
-  location: { city, state, country, remote, hybrid, raw },
-  description, applyUrl, postedAt, employmentType,
-  aiMatch: { score(0-100), matchedSkills[], missingSkills[], recommendation, reasoning },
-  status, batchId
-}
-```
-
-### Report
-```js
-{ user, fileName, filePath, fileSize, type, filters, stats, jobIds[], downloadCount }
-```
-
----
-
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
-- Node.js 18+
-- MongoDB (local or Atlas)
-- [Apify](https://apify.com) account + API token
-- [Anthropic](https://console.anthropic.com) API key
 
-### 1. Clone & Install
+- Node.js 18+
+- MongoDB local or Atlas
+- RapidAPI key with access to JSearchAPI
+- Google Gemini API key
+- Brevo API key for OTP and digest emails
+
+### Install
+
 ```bash
-git clone https://github.com/your-repo/job-hunter-ai
-cd job-hunter-ai
 npm run install:all
 ```
 
-### 2. Configure Environment
-```bash
-npm run setup   # copies .env.example files
-```
+### Backend Environment
 
-Edit `backend/.env`:
+Create `backend/.env` from `backend/.env.example`:
+
 ```env
+NODE_ENV=development
+PORT=5000
+
 MONGODB_URI=mongodb://localhost:27017/job-hunter
-JWT_SECRET=your_min_32_char_secret_here
-APIFY_API_TOKEN=apify_api_xxxxxxxxxxxxxxxx
-ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxx
+
+JWT_SECRET=your_super_secret_jwt_key_change_in_production_min_32_chars
+JWT_EXPIRES_IN=7d
+
+RAPIDAPI_KEY=your_rapidapi_key_for_jsearchapi
+GEMINI_API_KEY=your_gemini_api_key
+
+BREVO_API_KEY=your_brevo_api_key
+EMAIL_USER=verified_sender@example.com
+EMAIL_PASS=optional_smtp_password_if_used
+OTP_EXPIRES_MINUTES=10
+
 FRONTEND_URL=http://localhost:3000
+
+MAX_FILE_SIZE=10485760
+UPLOAD_PATH=uploads/
+
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+
+SCHEDULER_CRON=0 8 * * *
+SCHEDULER_TIMEZONE=Asia/Kolkata
 ```
 
-Edit `frontend/.env.local`:
+### Frontend Environment
+
+Create `frontend/.env.local`:
+
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
 ```
 
-### 3. Run Development
+### Run Development
+
 ```bash
 npm run dev
-# Backend:  http://localhost:5000
-# Frontend: http://localhost:3000
-# API Docs: http://localhost:5000/api/docs
 ```
 
----
+- Backend: `http://localhost:5000`
+- Frontend: `http://localhost:3000`
+- API docs: `http://localhost:5000/api/docs`
 
-## 📡 API Reference
+## Main API Routes
 
 | Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/api/auth/register` | ✗ | Register new user |
-| POST | `/api/auth/login` | ✗ | Login, get JWT |
-| GET  | `/api/auth/me` | ✓ | Get current user |
-| POST | `/api/resume/upload` | ✓ | Upload PDF resume |
-| GET  | `/api/resume/profile` | ✓ | Get extracted profile |
-| PUT  | `/api/resume/skills` | ✓ | Update skills |
-| POST | `/api/jobs/search` | ✓ | Trigger LinkedIn scrape + AI match |
-| GET  | `/api/jobs` | ✓ | List jobs (filter, sort, paginate) |
-| GET  | `/api/jobs/stats` | ✓ | Dashboard statistics |
-| PATCH| `/api/jobs/:id/status` | ✓ | Update job status |
-| POST | `/api/reports/generate` | ✓ | Generate Excel report |
-| GET  | `/api/reports/:id/download` | ✓ | Download Excel file |
+| --- | --- | --- | --- |
+| POST | `/api/auth/send-otp` | No | Start OTP registration |
+| POST | `/api/auth/verify-otp` | No | Verify OTP and create account |
+| POST | `/api/auth/login` | No | Login |
+| GET | `/api/auth/me` | Yes | Current user |
+| POST | `/api/resume/upload` | Yes | Upload and parse PDF resume |
+| GET | `/api/resume/profile` | Yes | Get parsed resume |
+| POST | `/api/jobs/browse` | Yes | Browse and save jobs without resume matching |
+| POST | `/api/jobs/search` | Yes | Fetch jobs and run AI resume matching |
+| GET | `/api/jobs` | Yes | List jobs with filters and pagination |
+| PATCH | `/api/jobs/:id/status` | Yes | Update application status and notes |
+| GET | `/api/jobs/stats` | Yes | Dashboard statistics |
+| GET | `/api/saved-searches` | Yes | List saved search profiles |
+| POST | `/api/saved-searches` | Yes | Create saved search profile |
+| PUT | `/api/saved-searches/:id` | Yes | Update saved search profile |
+| DELETE | `/api/saved-searches/:id` | Yes | Delete saved search profile |
+| POST | `/api/reports/generate` | Yes | Generate Excel report |
+| GET | `/api/reports/:id/download` | Yes | Download Excel report |
+| GET | `/api/profile` | Yes | Get profile |
+| PUT | `/api/profile` | Yes | Update profile/preferences |
+| POST | `/api/profile/avatar` | Yes | Upload avatar |
+| DELETE | `/api/profile/avatar` | Yes | Remove avatar |
+| PUT | `/api/profile/password` | Yes | Change password |
 
----
+## Job Search Flow
 
-## 🤖 AI Matching Logic
+1. User creates a saved search profile with keywords and location.
+2. User can browse jobs immediately through JSearchAPI/RapidAPI without a resume.
+3. After resume upload, Gemini parses the resume into structured skills and experience.
+4. AI matching compares each job with the parsed resume.
+5. Jobs are saved with score, matched skills, missing skills, priority, recommendation, and action plan.
+6. Users track applications and generate reports.
 
-For each job, Claude Sonnet is prompted with:
-- **Candidate skills** (extracted from resume)
-- **Job description** (from LinkedIn)
+## Daily Digest
 
-Returns:
+The scheduler runs at **8:00 AM IST** by default:
+
+```env
+SCHEDULER_CRON=0 8 * * *
+SCHEDULER_TIMEZONE=Asia/Kolkata
+```
+
+It:
+
+1. Finds active users with scheduler enabled.
+2. Runs each user's digest-enabled saved searches through JSearchAPI/RapidAPI.
+3. Saves browse-only jobs if the user has no resume.
+4. Runs Gemini AI matching if the user has an active parsed resume.
+5. Generates reports for scored jobs.
+6. Sends a Brevo email digest when email notifications are enabled.
+
+## AI Matching
+
+OrbitHire uses Google Gemini to return structured match data:
+
 ```json
 {
   "score": 87,
-  "matchedSkills": ["Node.js", "Express", "MongoDB", "React"],
+  "matchedSkills": ["Node.js", "React", "MongoDB"],
   "missingSkills": ["Docker", "AWS"],
   "recommendation": "highly_recommended",
-  "reasoning": "Strong match — 87% skill overlap..."
+  "priority": "apply_now",
+  "reasoning": "Strong fit based on backend and React requirements.",
+  "actionPlan": {
+    "resumeKeywords": ["REST APIs", "React hooks"],
+    "resumeSuggestions": ["Highlight production MERN projects."],
+    "coverLetterAngle": "Emphasize full-stack delivery and API work.",
+    "nextStep": "Apply today with a tailored resume."
+  }
 }
 ```
 
-Recommendation thresholds:
-- `highly_recommended` — score ≥ 75
-- `recommended` — score 55–74
-- `consider` — score 35–54
-- `not_recommended` — score < 35
+## Tech Stack
 
----
-
-## ⏰ Scheduler
-
-The daily cron runs at **8:00 AM IST** (`0 8 * * *` Asia/Kolkata):
-
-1. Fetches all active users with resumes + scheduler enabled
-2. Runs Apify LinkedIn scraper (4 queries, India, last 24h)
-3. AI-matches all jobs against each user's resume
-4. Saves results to MongoDB (upserts to avoid duplicates)
-5. Generates Excel report and saves to DB
-
-To trigger manually:
-```js
-const scheduler = require('./src/services/schedulerService');
-await scheduler.triggerManually();
-```
-
----
-
-## 📊 Excel Report Columns
-
-| Column | Description |
-|--------|-------------|
-| # | Row number |
-| Company | Company name |
-| Role / Title | Job title |
-| Location | City, State |
-| Type | full-time / contract |
-| Posted | Formatted date |
-| Match Score | Color-coded % |
-| Recommendation | ⭐ Highly / ✅ / 🤔 / ❌ |
-| Matched Skills | From your resume |
-| Missing Skills | Gaps to fill |
-| AI Reasoning | 2-sentence explanation |
-| Apply URL | Clickable hyperlink |
-
----
-
-## 🔒 Security
-
-- Passwords hashed with **bcrypt** (12 rounds)
-- JWT tokens expire in **7 days**
-- **Helmet.js** security headers
-- **Rate limiting** — 100 req / 15 min per IP
-- File uploads restricted to **PDF only**, max 10MB
-- All dashboard routes require valid JWT
-
----
-
-## 🛠 Tech Stack
-
-**Backend:** Node.js, Express.js, MongoDB, Mongoose, JWT, Multer, pdf-parse, ExcelJS, node-cron, Winston  
+**Backend:** Node.js, Express, MongoDB, Mongoose, JWT, Multer, pdf-parse, ExcelJS, node-cron, Winston  
 **Frontend:** Next.js 14, TypeScript, Tailwind CSS, React Query, Zustand, Recharts, react-dropzone  
-**AI:** Anthropic Claude Sonnet 4  
-**Scraping:** Apify LinkedIn Jobs Scraper  
+**Jobs:** JSearchAPI via RapidAPI  
+**AI:** Google Gemini  
+**Email:** Brevo  
 
----
+## Security Notes
 
-## 📝 License
+- Passwords are hashed with bcrypt.
+- Dashboard routes require JWT authentication.
+- File uploads are restricted to PDF resumes and image avatars.
+- API requests are rate-limited.
+- Do not commit `.env`, `.next`, `node_modules`, uploads, API keys, or generated reports.
 
-MIT © 2024 Job Hunter AI
+## License
+
+MIT
