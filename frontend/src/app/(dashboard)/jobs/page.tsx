@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, memo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import Link from 'next/link';
 import { jobsApi, savedSearchApi } from '@/lib/api';
 import { cn, getRecommendationBadge, timeAgo, truncate } from '@/lib/utils';
 import {
@@ -747,6 +748,13 @@ function DetailContent({
             <ArrowUpRight className="w-3.5 h-3.5 opacity-60" />
           </a>
         )}
+        <Link
+          href={`/resume/tailor?jobId=${job._id}`}
+          className="btn-secondary relative z-20 flex items-center justify-center gap-2 py-2.5 px-4 text-[13px] font-bold border-brand-500/30 text-brand-600 hover:bg-blue-50/50"
+        >
+          <Sparkles className="w-4 h-4 text-brand-500 animate-pulse" />
+          Tailor Resume
+        </Link>
         <button
           onClick={onDelete}
           disabled={deleteLoading}

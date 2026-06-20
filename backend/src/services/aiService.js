@@ -361,9 +361,77 @@ const batchMatchJobs = async (jobs, resumeSkills, resumeSummary, batchSize = 5) 
   return results;
 };
 
+/**
+ * Tailor resume summary and experience descriptions for a target job posting using Gemini
+ */
+const tailorResumeForJob = async (resume, job) => {
+  const systemPrompt = `You are an expert resume writer and technical recruiter.
+Your task is to tailor a candidate's resume summary and experience descriptions to match a target job description.
+Always respond with valid JSON only. No markdown, no explanation.`;
+
+  const candidateSkills = resume.skills?.technical?.map(s => s.name).join(', ') || '';
+  const candidateSoftSkills = resume.skills?.soft?.join(', ') || '';
+  
+  // Format experiences to pass to Gemini
+  const experiencesText = (resume.experience || []).map((exp, idx) => {
+    return `Index: ${idx}
+Company: ${exp.company}
+Role: ${exp.role}
+Duration: ${exp.duration}
+Description: ${exp.description || ''}
+Technologies: ${(exp.technologies || []).join(', ')}`;
+  }).join('\n\n');
+
+  const userPrompt = `You are given a candidate's original resume details and a target job posting.
+Rewrite/tailor the candidate's professional summary and experience bullet points to highlight skills, responsibilities, and achievements that align with the job description.
+
+CRITICAL RULES:
+1. Strict Truthfulness: Do NOT invent new job titles, new companies, new employment dates, degrees, or certifications. Only rewrite the descriptions, summaries, and optimize relevance.
+2. Maintain identical array indexes for experiences so they can be mapped back to the database.
+3. For each experience description: Rewrite it into a concise, high-impact paragraph or bullet points that focus on the requirements in the job description, emphasizing matching technical skills. Do not add technologies the candidate has not listed.
+4. Keep the output clean, professional, and optimized for ATS keyword matching.
+
+CANDIDATE PROFILE:
+Summary: ${resume.profile?.summary || ''}
+Technical Skills: ${candidateSkills}
+Soft Skills: ${candidateSoftSkills}
+
+EXPERIENCES TO TAILOR:
+${experiencesText}
+
+TARGET JOB POSTING:
+Title: ${job.title}
+Company: ${job.company?.name}
+Description: ${(job.description || '').substring(0, 3000)}
+
+Return this JSON structure:
+{
+  "tailoredSummary": "A revised version of the candidate's summary tailored for the job, keeping it factual.",
+  "tailoredExperience": [
+    {
+      "index": 0,
+      "tailoredDescription": "The rewritten description/bullets focusing on job requirements."
+    }
+  ]
+}
+
+Make sure to output ONLY valid JSON.`;
+
+  try {
+    const result = await callGemini(systemPrompt, userPrompt, 2500);
+    const parsed = safeParseJSON(result.content);
+    return parsed;
+  } catch (error) {
+    logger.error('Error tailoring resume with Gemini:', error);
+    throw new Error(`Failed to tailor resume: ${error.message}`);
+  }
+};
+
 module.exports = {
   extractResumeProfile,
   matchJobToResume,
   batchMatchJobs,
   fallbackMatch,
+  tailorResumeForJob,
 };
+

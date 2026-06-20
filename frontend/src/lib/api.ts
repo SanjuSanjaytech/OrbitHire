@@ -68,6 +68,9 @@ export const resumeApi = {
   getProfile: () => api.get('/resume/profile'),
   updateSkills: (skills: object) => api.put('/resume/skills', skills),
   delete: () => api.delete('/resume'),
+  tailor: (jobId: string) => api.post('/resume/tailor', { jobId }),
+  getTailored: (jobId: string) => api.get(`/resume/tailor/${jobId}`),
+  updateTailored: (id: string, data: object) => api.put(`/resume/tailor/${id}`, data),
 };
 
 // ── Jobs ──────────────────────────────────────────────────────────────────────

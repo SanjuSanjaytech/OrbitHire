@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import QueryProvider from '@/components/providers/QueryProvider';
@@ -59,6 +59,13 @@ export const metadata: Metadata = {
   // ── PWA / mobile ──────────────────────────────────────────────────────────
   manifest:    '/site.webmanifest',
   themeColor:  '#ffffff',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
